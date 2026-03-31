@@ -120,5 +120,5 @@ with col_mid:
     else:
         st.write("Vyber popis")
     
-    if st.checkbox("Nápověda"):
-        st.write(f"**{winner_id}**")
+    # if st.checkbox("Nápověda"):
+    #     st.write(f"**{winner_id}**")
