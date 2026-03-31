@@ -24,7 +24,7 @@ if 'df' not in st.session_state:
     st.session_state.score = 0
     st.session_state.difficulty = 'easy'
     st.session_state.first_click = None
-    st.session_state.mobile = True
+    st.session_state.mobile = False
 
 if 'round_data' not in st.session_state:
     st.session_state.round_data = create_card_pair(st.session_state.df, st.session_state.difficulty)
@@ -113,11 +113,11 @@ winner_id, card1, card2 = st.session_state.round_data
 
 if st.session_state.mobile:
     # --- MOBILE: vertical stack ---
-    render_card(card1, 'A', st)          # st itself acts as a full-width "column"
+    render_card(card1, 'A', st.container())
     st.divider()
-    render_stats(st)
+    render_stats(st.container())
     st.divider()
-    render_card(card2, 'B', st)
+    render_card(card2, 'B', st.container())
 else:
     # --- DESKTOP: side-by-side ---
     col_left, col_mid, col_right = st.columns([2, 1, 2])
