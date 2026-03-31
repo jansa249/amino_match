@@ -2,7 +2,7 @@ import streamlit as st
 from logic import create_card_pair, load_df, DIFFICULTIES
 
 # --- 1. PAGE CONFIG & STYLE ---
-st.set_page_config(page_title="DOBBLE aminových kyselin", layout="wide")
+st.set_page_config(page_title="AminoMatch", layout="wide")
 
 CARD_COLORS = {'A': '#4a7c9e', 'B': '#7a4a6e'}
 
@@ -66,7 +66,10 @@ def handle_click(clicked_name, card_id):
             if clicked_name == first['name'] and clicked_name == winner_id:
                 st.session_state.score += 1
                 st.balloons()
+                # st.success("✅ Správně!")
                 st.session_state.round_data = create_card_pair(st.session_state.df, st.session_state.difficulty)
+            else:
+                st.snow()
         st.session_state.first_click = None
 
 def render_card(card_items, side_id, col):
@@ -95,7 +98,7 @@ def render_card(card_items, side_id, col):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 5. UI ---
-st.title("🧬 DOBBLE aminových kyselin")
+st.title("🧬 AminoMatch")
 
 # Row 1: difficulty buttons
 d_cols = st.columns(3)
