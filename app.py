@@ -6,10 +6,13 @@ st.set_page_config(page_title="DOBBLE aminových kyselin", layout="wide")
 
 st.markdown("""
     <style>
+    /* Game buttons (card items) */
     div.stButton > button p {
         font-size: 22px !important;
         font-weight: bold;
     }
+
+    /* Card background */
     [data-testid="stVerticalBlock"] > div:has(div.stButton) {
         background-color: #7495ad;
         padding: 20px;
@@ -30,6 +33,12 @@ if 'round_data' not in st.session_state:
     st.session_state.round_data = create_card_pair(st.session_state.df, st.session_state.difficulty)
 
 winner_id, card1, card2 = st.session_state.round_data
+
+DIFF_LABELS = {
+    'easy':   'Student/ka',
+    'medium': 'Doktorand/ka',
+    'hard':   'Profesor/ka',
+}
 
 # --- 3. HELPER FUNCTIONS ---
 def reset_game(new_diff):
@@ -72,38 +81,39 @@ def render_card(card_items, side_id, column_obj):
                 args=(item['name'], side_id)
             )
 
-def render_stats(column_obj):
-    """Renders score, status, and the reset-selection button."""
-    with column_obj:
-        st.metric("BODY", st.session_state.score)
-
-        if st.session_state.first_click:
-            selected_name = st.session_state.first_click['name']
-            selected_card = st.session_state.first_click['card']
-            st.info(f"✅ Vybráno: **{selected_name}** (Kartička {selected_card})")
-            st.button(
-                "↩️ Zrušit výběr",
-                on_click=reset_selection,
-                use_container_width=True,
-            )
-        else:
-            st.write("Vyber popis na jedné kartičce, pak ho najdi na druhé.")
-
 # --- 4. UI ---
 st.title("🧬 DOBBLE aminových kyselin")
-st.write("Najdi **jedinou** aminokyselinu, která je na obou kartách!")
 
-# Top row: difficulty + mobile toggle
-top_left, top_right = st.columns([3, 1])
-with top_left:
-    d_cols = st.columns(3)
-    with d_cols[0]:
-        if st.button("🟢 Bc. student", use_container_width=True): reset_game('easy')
-    with d_cols[1]:
-        if st.button("🟡 PhD student", use_container_width=True): reset_game('medium')
-    with d_cols[2]:
-        if st.button("🔴 Profesor", use_container_width=True): reset_game('hard')
-with top_right:
+# Row 1: difficulty buttons
+d_cols = st.columns(3)
+for col, (diff_key, diff_label) in zip(d_cols, DIFF_LABELS.items()):
+    with col:
+        is_active = st.session_state.difficulty == diff_key
+        st.button(
+            f"{'▶ ' if is_active else ''}{diff_label}",
+            use_container_width=True,
+            type="primary" if is_active else "secondary",
+            on_click=reset_game,
+            args=(diff_key,),
+            key=f"diff_{diff_key}",
+        )
+
+# Row 2: status text + zrušit | score | mobile toggle
+row2_left, row2_mid, row2_right = st.columns([3, 1, 1])
+with row2_left:
+    something_selected = st.session_state.first_click is not None
+    status_cols = st.columns([3, 1])
+    with status_cols[0]:
+        if something_selected:
+            st.markdown("✅ **Vybrána první kartička** — najdi shodu na druhé!")
+        else:
+            st.markdown("Najdi jedinou aminokyselinu, která je na obou kartách!")
+    with status_cols[1]:
+        st.button("↩️ Zrušit", on_click=reset_selection,
+                  use_container_width=True, disabled=not something_selected)
+with row2_mid:
+    st.metric("BODY", st.session_state.score)
+with row2_right:
     st.session_state.mobile = st.toggle("📱 Mobil", value=st.session_state.mobile)
 
 st.divider()
@@ -112,15 +122,9 @@ st.divider()
 winner_id, card1, card2 = st.session_state.round_data
 
 if st.session_state.mobile:
-    # --- MOBILE: vertical stack ---
-    render_card(card1, 'A', st.container())
-    st.divider()
-    render_stats(st.container())
-    st.divider()
-    render_card(card2, 'B', st.container())
+    _, col_left, col_right, _ = st.columns([0.5, 4, 4, 0.5])
 else:
-    # --- DESKTOP: side-by-side ---
-    col_left, col_mid, col_right = st.columns([2, 1, 2])
-    render_card(card1, 'A', col_left)
-    render_stats(col_mid)
-    render_card(card2, 'B', col_right)
+    col_left, col_right = st.columns(2)
+
+render_card(card1, 'A', col_left)
+render_card(card2, 'B', col_right)
