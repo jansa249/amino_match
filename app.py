@@ -6,24 +6,6 @@ st.set_page_config(page_title="DOBBLE aminových kyselin", layout="wide")
 
 st.markdown("""
     <style>
-    /* Desktop: large buttons */
-    div.stButton > button p {
-        font-size: 22px !important;
-        font-weight: bold;
-    }
-
-    /* Mobile: smaller buttons inside .mobile-cards */
-    .mobile-cards div.stButton > button p {
-        font-size: 13px !important;
-        font-weight: bold;
-    }
-    .mobile-cards h2 {
-        font-size: 18px !important;
-    }
-    .mobile-cards [data-testid="stVerticalBlock"] > div:has(div.stButton) {
-        padding: 8px !important;
-    }
-
     /* Card background */
     [data-testid="stVerticalBlock"] > div:has(div.stButton) {
         background-color: #7495ad;
@@ -52,7 +34,22 @@ DIFF_LABELS = {
     'hard':   'Profesor/ka',
 }
 
-# --- 3. HELPER FUNCTIONS ---
+# --- 3. INJECT FONT SIZE based on mode (runs every render) ---
+btn_font = "13px" if st.session_state.mobile else "22px"
+card_padding = "8px" if st.session_state.mobile else "20px"
+st.markdown(f"""
+    <style>
+    div.stButton > button p {{
+        font-size: {btn_font} !important;
+        font-weight: bold;
+    }}
+    [data-testid="stVerticalBlock"] > div:has(div.stButton) {{
+        padding: {card_padding} !important;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 4. HELPER FUNCTIONS ---
 def reset_game(new_diff):
     st.session_state.difficulty = new_diff
     st.session_state.round_data = create_card_pair(st.session_state.df, new_diff)
@@ -93,7 +90,7 @@ def render_card(card_items, side_id, column_obj):
                 args=(item['name'], side_id)
             )
 
-# --- 4. UI ---
+# --- 5. UI ---
 st.title("🧬 DOBBLE aminových kyselin")
 
 # Row 1: difficulty buttons
@@ -133,14 +130,6 @@ st.divider()
 # Pull fresh round data (may have changed via handle_click callback)
 winner_id, card1, card2 = st.session_state.round_data
 
-if st.session_state.mobile:
-    # Wrap in a div so .mobile-cards CSS applies to shrink fonts
-    st.markdown('<div class="mobile-cards">', unsafe_allow_html=True)
-    col_left, col_right = st.columns(2)
-    render_card(card1, 'A', col_left)
-    render_card(card2, 'B', col_right)
-    st.markdown('</div>', unsafe_allow_html=True)
-else:
-    col_left, col_right = st.columns(2)
-    render_card(card1, 'A', col_left)
-    render_card(card2, 'B', col_right)
+col_left, col_right = st.columns(2)
+render_card(card1, 'A', col_left)
+render_card(card2, 'B', col_right)
